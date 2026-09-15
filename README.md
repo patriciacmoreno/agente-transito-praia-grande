@@ -1,149 +1,144 @@
-# 🤖 Agente Financeiro Inteligente com IA Generativa
+# 🚦 Vetor — Agente de Mobilidade Urbana de Praia Grande
 
-## Contexto
+Agente de inteligência artificial que responde perguntas em linguagem natural sobre trânsito, transporte público, frota de veículos e infraestrutura viária de **Praia Grande** e da **Região Metropolitana da Baixada Santista (RMBS)**, com base em dados públicos oficiais.
 
-Os assistentes virtuais no setor financeiro estão evoluindo de simples chatbots reativos para **agentes inteligentes e proativos**. Neste desafio, você vai idealizar e prototipar um agente financeiro que utiliza IA Generativa para:
+Projeto adaptado a partir do desafio [dio-lab-bia-do-futuro](https://github.com/digitalinnovationone/dio-lab-bia-do-futuro) (originalmente voltado a um agente financeiro), trocando o domínio para dados abertos de mobilidade urbana.
 
-- **Antecipar necessidades** ao invés de apenas responder perguntas
-- **Personalizar** sugestões com base no contexto de cada cliente
-- **Cocriar soluções** financeiras de forma consultiva
-- **Garantir segurança** e confiabilidade nas respostas (anti-alucinação)
-
-> [!TIP]
-> Na pasta [`examples/`](./examples/) você encontra referências de implementação para cada etapa deste desafio.
+🔗 **App no ar:** [agente-transito-praia-grande.streamlit.app](https://agente-transito-praia-grande-hz5muazanil7tgqdmec6mm.streamlit.app)
 
 ---
 
-## O Que Você Deve Entregar
+## O Problema
 
-### 1. Documentação do Agente
+Os dados públicos de trânsito de Praia Grande existem, mas estão espalhados em dezenas de planilhas no [Portal de Dados Abertos da Prefeitura](https://dadosabertos.praiagrande.sp.gov.br/geonetwork/srv/por/catalog.search). Acidentes, frota de veículos, transporte coletivo, ciclovias, cada um em um arquivo separado. Cruzar essas informações manualmente exige tempo e conhecimento técnico que a maioria dos cidadãos, jornalistas e pesquisadores não tem.
 
-Defina **o que** seu agente faz e **como** ele funciona:
+## A Solução
 
-- **Caso de Uso:** Qual problema financeiro ele resolve? (ex: consultoria de investimentos, planejamento de metas, alertas de gastos)
-- **Persona e Tom de Voz:** Como o agente se comporta e se comunica?
-- **Arquitetura:** Fluxo de dados e integração com a base de conhecimento
-- **Segurança:** Como evitar alucinações e garantir respostas confiáveis?
-
-📄 **Template:** [`docs/01-documentacao-agente.md`](./docs/01-documentacao-agente.md)
+O **Vetor** consulta sete bases de dados oficiais e responde perguntas como *"quantos acidentes aconteceram no meu bairro em 2023?"* ou *"como está a frota de veículos da cidade?"*. Sempre citando a fonte e o ano exatos, sem inventar números, sem fazer previsões e sem opinar sobre gestão pública.
 
 ---
 
-### 2. Base de Conhecimento
+## Dados Utilizados
 
-Utilize os **dados mockados** disponíveis na pasta [`data/`](./data/) para alimentar seu agente:
+Extraídos do Portal de Dados Abertos da Prefeitura de Praia Grande:
 
-| Arquivo | Formato | Descrição |
-|---------|---------|-----------|
-| `transacoes.csv` | CSV | Histórico de transações do cliente |
-| `historico_atendimento.csv` | CSV | Histórico de atendimentos anteriores |
-| `perfil_investidor.json` | JSON | Perfil e preferências do cliente |
-| `produtos_financeiros.json` | JSON | Produtos e serviços disponíveis |
+| Arquivo | Cobertura |
+|---|---|
+| `Acidentes por Bairro e por Ano_Praia Grande.csv` | Acidentes de trânsito por bairro, por ano |
+| `Acidentes Bairro Mês.csv` | Acidentes de trânsito por bairro, por mês |
+| `Índice de Acidentes_Praia Grande.csv` | Indicadores agregados de segurança viária |
+| `Frota de veiculos por tipo_PG_RMBS.csv` | Frota de veículos por tipo (PG e RMBS) |
+| `Transporte intermunicipal.csv` | Linhas, frota e passageiros do transporte coletivo |
+| `Infraestrutura cicloviária_Praia Grande.csv` | Extensão de ciclovias e ciclofaixas |
+| `Tipo de vias_Praia Grande.csv` | Extensão de vias abertas e pavimentadas |
 
-Você pode adaptar ou expandir esses dados conforme seu caso de uso.
-
-📄 **Template:** [`docs/02-base-conhecimento.md`](./docs/02-base-conhecimento.md)
-
----
-
-### 3. Prompts do Agente
-
-Documente os prompts que definem o comportamento do seu agente:
-
-- **System Prompt:** Instruções gerais de comportamento e restrições
-- **Exemplos de Interação:** Cenários de uso com entrada e saída esperada
-- **Tratamento de Edge Cases:** Como o agente lida com situações limite
-
-📄 **Template:** [`docs/03-prompts.md`](./docs/03-prompts.md)
+Mais detalhes em [`docs/02-base-conhecimento.md`](./docs/02-base-conhecimento.md).
 
 ---
 
-### 4. Aplicação Funcional
+## Arquitetura
 
-Desenvolva um **protótipo funcional** do seu agente:
+```mermaid
+flowchart TD
+    A[Usuário] -->|Pergunta| B[Chat - Streamlit]
+    B --> C[Agente Vetor]
+    C --> D{Filtra dados relevantes}
+    D --> E[CSVs de trânsito/mobilidade]
+    E --> C
+    C --> F[API Gemini]
+    F --> C
+    C --> G[Resposta com fonte citada]
+    G --> B
+```
 
-- Chatbot interativo (sugestão: Streamlit, Gradio ou similar)
-- Integração com LLM (via API ou modelo local)
-- Conexão com a base de conhecimento
-
-📁 **Pasta:** [`src/`](./src/)
-
----
-
-### 5. Avaliação e Métricas
-
-Descreva como você avalia a qualidade do seu agente:
-
-**Métricas Sugeridas:**
-- Precisão/assertividade das respostas
-- Taxa de respostas seguras (sem alucinações)
-- Coerência com o perfil do cliente
-
-📄 **Template:** [`docs/04-metricas.md`](./docs/04-metricas.md)
+O agente carrega os CSVs, filtra as linhas relevantes conforme palavras da pergunta (bairro, ano, tema) e envia apenas esse recorte ao modelo, evitando estourar o contexto e mantendo as respostas ancoradas nos dados reais. Detalhes em [`docs/01-documentacao-agente.md`](./docs/01-documentacao-agente.md).
 
 ---
 
-### 6. Pitch
+## Stack
 
-Grave um **pitch de 3 minutos** (estilo elevador) apresentando:
+| Camada | Ferramenta |
+|---|---|
+| Interface | [Streamlit](https://streamlit.io/) |
+| LLM | [API Gemini](https://ai.google.dev/) (`google-genai`, camada gratuita) |
+| Dados | Python + [pandas](https://pandas.pydata.org/) |
+| Hospedagem | [Streamlit Community Cloud](https://streamlit.io/cloud) |
 
-- Qual problema seu agente resolve?
-- Como ele funciona na prática?
-- Por que essa solução é inovadora?
-
-📄 **Template:** [`docs/05-pitch.md`](./docs/05-pitch.md)
-
----
-
-## Ferramentas Sugeridas
-
-Todas as ferramentas abaixo possuem versões gratuitas:
-
-| Categoria | Ferramentas |
-|-----------|-------------|
-| **LLMs** | [ChatGPT](https://chat.openai.com/), [Copilot](https://copilot.microsoft.com/), [Gemini](https://gemini.google.com/), [Claude](https://claude.ai/), [Ollama](https://ollama.ai/) |
-| **Desenvolvimento** | [Streamlit](https://streamlit.io/), [Gradio](https://www.gradio.app/), [Google Colab](https://colab.research.google.com/) |
-| **Orquestração** | [LangChain](https://www.langchain.com/), [LangFlow](https://www.langflow.org/), [CrewAI](https://www.crewai.com/) |
-| **Diagramas** | [Mermaid](https://mermaid.js.org/), [Draw.io](https://app.diagrams.net/), [Excalidraw](https://excalidraw.com/) |
+Todo o projeto foi construído com ferramentas gratuitas, sem custo de infraestrutura, tornando o modelo replicável para outros municípios com portais de dados abertos.
 
 ---
 
 ## Estrutura do Repositório
 
 ```
-📁 lab-agente-financeiro/
+📁 agente-transito-praia-grande/
 │
 ├── 📄 README.md
 │
-├── 📁 data/                          # Dados mockados para o agente
-│   ├── historico_atendimento.csv     # Histórico de atendimentos (CSV)
-│   ├── perfil_investidor.json        # Perfil do cliente (JSON)
-│   ├── produtos_financeiros.json     # Produtos disponíveis (JSON)
-│   └── transacoes.csv                # Histórico de transações (CSV)
+├── 📁 data/                                   # CSVs de trânsito e mobilidade
+│   ├── Acidentes por Bairro e por Ano_Praia Grande.csv
+│   ├── Acidentes Bairro Mês.csv
+│   ├── Índice de Acidentes_Praia Grande.csv
+│   ├── Frota de veiculos por tipo_PG_RMBS.csv
+│   ├── Transporte intermunicipal.csv
+│   ├── Infraestrutura cicloviária_Praia Grande.csv
+│   └── Tipo de vias_Praia Grande.csv
 │
-├── 📁 docs/                          # Documentação do projeto
-│   ├── 01-documentacao-agente.md     # Caso de uso e arquitetura
-│   ├── 02-base-conhecimento.md       # Estratégia de dados
-│   ├── 03-prompts.md                 # Engenharia de prompts
-│   ├── 04-metricas.md                # Avaliação e métricas
-│   └── 05-pitch.md                   # Roteiro do pitch
+├── 📁 docs/                                   # Documentação do projeto
+│   ├── 01-documentacao-agente.md              # Caso de uso, persona e arquitetura
+│   ├── 02-base-conhecimento.md                # Fonte e estratégia dos dados
+│   ├── 03-prompts.md                          # System prompt e edge cases
+│   ├── 04-metricas.md                         # Testes e resultados de avaliação
+│   └── 05-pitch.md                            # Roteiro do pitch
 │
-├── 📁 src/                           # Código da aplicação
-│   └── app.py                        # (exemplo de estrutura)
+├── 📁 src/                                    # Código da aplicação
+│   ├── app.py                                 # Interface de chat (Streamlit)
+│   ├── agente.py                              # Lógica do agente e chamada à API
+│   ├── config.py                              # Leitura da chave da API (secrets)
+│   └── requirements.txt                       # Dependências
 │
-├── 📁 assets/                        # Imagens e diagramas
-│   └── ...
-│
-└── 📁 examples/                      # Referências e exemplos
-    └── README.md
+└── 📁 assets/                                 # Vídeo de pitch e materiais de apoio
 ```
 
 ---
 
-## Dicas Finais
+## Rodando Localmente
 
-1. **Comece pelo prompt:** Um bom system prompt é a base de um agente eficaz
-2. **Use os dados mockados:** Eles garantem consistência e evitam problemas com dados sensíveis
-3. **Foque na segurança:** No setor financeiro, evitar alucinações é crítico
-4. **Teste cenários reais:** Simule perguntas que um cliente faria de verdade
-5. **Seja direto no pitch:** 3 minutos passam rápido, vá ao ponto
+```bash
+git clone https://github.com/patriciacmoreno/agente-transito-praia-grande.git
+cd agente-transito-praia-grande
+pip install -r src/requirements.txt
+```
+
+Crie um arquivo `.streamlit/secrets.toml` com sua chave gratuita do Gemini (gerada em [aistudio.google.com/apikey](https://aistudio.google.com/apikey)):
+
+```toml
+GEMINI_API_KEY = "sua-chave-aqui"
+```
+
+Depois, rode:
+
+```bash
+streamlit run src/app.py
+```
+
+---
+
+## Avaliação
+
+O agente foi testado com 14 perguntas cobrindo Assertividade, Segurança e Coerência resultando em todas aprovadas. Resultados completos e limitações conhecidas em [`docs/04-metricas.md`](./docs/04-metricas.md).
+
+---
+
+## Limitações Declaradas
+
+- Não faz previsões futuras sobre acidentes ou mobilidade;
+- Não emite opinião sobre políticas públicas ou gestão municipal;
+- Não possui dados em tempo real, apenas os históricos publicados no portal;
+- Cobre apenas Praia Grande e, parcialmente, a RMBS.
+
+---
+
+## Créditos
+
+Projeto desenvolvido por [Patrícia Moreno](https://github.com/patriciacmoreno) a partir do desafio da [Digital Innovation One](https://github.com/digitalinnovationone/dio-lab-bia-do-futuro), com dados do [Portal de Dados Abertos da Prefeitura de Praia Grande](https://dadosabertos.praiagrande.sp.gov.br/).
