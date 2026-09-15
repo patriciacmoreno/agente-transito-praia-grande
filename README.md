@@ -96,8 +96,7 @@ Todo o projeto foi construído com ferramentas gratuitas, sem custo de infraestr
 │   ├── agente.py                              # Lógica do agente e chamada à API
 │   ├── config.py                              # Leitura da chave da API (secrets)
 │   └── requirements.txt                       # Dependências
-│
-└── 📁 assets/                                 # Vídeo de pitch e materiais de apoio
+
 ```
 
 ---
