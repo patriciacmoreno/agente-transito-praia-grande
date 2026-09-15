@@ -19,7 +19,7 @@ DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data")
 
 # Modelo gratuito recomendado (verifique sempre a página de preços do Gemini
 # para confirmar quais modelos estão na camada gratuita no momento)
-MODELO_GEMINI = "gemini-2.5-flash"
+MODELO_GEMINI = "gemini-3.6-flash"
 
 # Cada fonte tem: nome exato do arquivo, encoding correto e uma descrição curta
 FONTES = {
