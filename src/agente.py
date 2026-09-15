@@ -119,18 +119,32 @@ def filtrar_por_pergunta(df: pd.DataFrame, pergunta: str) -> pd.DataFrame:
     Tenta filtrar as linhas do DataFrame que batem com valores mencionados
     na pergunta (ex: nome de bairro, ano). Se nenhum valor específico for
     encontrado, devolve o DataFrame original sem filtrar.
+
+    É tolerante a colunas "problemáticas" (vazias, duplicadas ou com tipos
+    inesperados, comuns em CSVs exportados com ';' sobrando no cabeçalho):
+    se uma coluna der erro ao processar, ela é simplesmente ignorada.
     """
     pergunta_lower = pergunta.lower()
     df_filtrado = df
 
     for coluna in df.columns:
-        valores_unicos = df[coluna].astype(str).unique()
-        # Só considera valores com 3+ caracteres para evitar falsos positivos (ex: "1", "m")
-        valores_na_pergunta = [
-            v for v in valores_unicos if len(v) >= 3 and v.lower() in pergunta_lower
-        ]
-        if valores_na_pergunta:
-            df_filtrado = df_filtrado[df_filtrado[coluna].astype(str).isin(valores_na_pergunta)]
+        try:
+            serie = df[coluna]
+            if isinstance(serie, pd.DataFrame):
+                # Nomes de coluna duplicados/vazios podem fazer df[coluna]
+                # devolver mais de uma coluna de uma vez - ignora esse caso
+                continue
+
+            valores_unicos = serie.dropna().astype(str).unique()
+            valores_na_pergunta = [
+                v for v in valores_unicos
+                if isinstance(v, str) and len(v) >= 3 and v.lower() in pergunta_lower
+            ]
+            if valores_na_pergunta:
+                df_filtrado = df_filtrado[df_filtrado[coluna].astype(str).isin(valores_na_pergunta)]
+        except Exception:
+            # Coluna com formato inesperado: ignora e continua com as demais
+            continue
 
     return df_filtrado
 
